@@ -1789,7 +1789,7 @@ static void run_tor() {
 
      // Block this thread until the process exits (to have same behavior as tor_main call for static tor integration)
     WaitForSingleObject(pi.hProcess, INFINITE);
-#elif defined(__APPLE__) and !defined(EMBEDDED_TOR)
+#elif defined(__APPLE__) && !defined(EMBEDDED_TOR)
     // Tor separate process via boost::process
     argv.push_back("--Log");
     argv.push_back("notice file " + log_file.string());
