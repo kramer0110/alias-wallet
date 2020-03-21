@@ -43,7 +43,7 @@ using namespace std;
 using namespace boost;
 namespace fs = boost::filesystem;
 
-#if !defined(WIN32) && !defined(__APPLE__) && !defined(__linux__)
+#if defined(EMBEDDED_TOR)
 // Tor embedded
 extern "C" {
     int tor_main(int argc, char *argv[]);
@@ -1643,7 +1643,7 @@ static void run_tor() {
 #if defined(WIN32)
     bQuoteArg = true;
 #endif
-#ifndef __APPLE__
+#if !defined(__APPLE__) || defined(EMBEDDED_TOR)
     // Windows CreateProcess(), exec() and main() when embedding tor need 'tor' as first argument
     // Tor separate process via boost::process does not need 'tor' as first argument
     argv.push_back("tor");
@@ -1737,7 +1737,7 @@ static void run_tor() {
     argv.push_back("--defaults-torrc");
     argv.push_back(quoteArg(bQuoteArg, torrc_defaults_file.string()));
 #endif
-#ifdef WIN32
+#if defined(WIN32) && !defined(EMBEDDED_TOR)
     // Tor separate process via CreateProcess
     argv.push_back("--Log");
     argv.push_back("\"notice file " + log_file.string() + "\"");
@@ -1789,7 +1789,7 @@ static void run_tor() {
 
      // Block this thread until the process exits (to have same behavior as tor_main call for static tor integration)
     WaitForSingleObject(pi.hProcess, INFINITE);
-#elif __APPLE__
+#elif defined(__APPLE__) and !defined(EMBEDDED_TOR)
     // Tor separate process via boost::process
     argv.push_back("--Log");
     argv.push_back("notice file " + log_file.string());
@@ -1802,7 +1802,7 @@ static void run_tor() {
     pChildTor.detach();
      // Block this thread until the process exits (to have same behavior as tor_main call for static tor integration)
     gTor.wait();
-#elif __linux__
+#elif defined(__linux__) && !defined(EMBEDDED_TOR)
     // Tor separate process via fork,execvp
     argv.push_back("--Log");
     argv.push_back("notice file " + log_file.string());
@@ -1945,13 +1945,13 @@ bool StopNode()
             semOutbound->post();
     DumpAddresses();
 
-#ifdef __APPLE__
+#if defined(__APPLE__) && !defined(EMBEDDED_TOR)
     // Tor separate process via boost::process
     if (gTor && gTor.valid()) {
         LogPrintf("Terminate tor process group\n");
         gTor.terminate();
     }
-#elif __linux__
+#elif defined(__linux__) && !defined(EMBEDDED_TOR)
     if (tor_process_pid > 0) {
         // Prevent confusing error output as SIGTERM is not working from here
         tor_killed_from_here = true;

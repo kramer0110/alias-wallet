@@ -47,7 +47,7 @@ target_link_libraries(libtor INTERFACE lib_tor)
 set(TOR_LIBTOR_PREFIX ${CMAKE_CURRENT_BINARY_DIR})
 message(STATUS "TOR_LIBTOR_PREFIX: ${TOR_LIBTOR_PREFIX}")
 
-set(TOR_LIBTOR_PATH ${TOR_LIBTOR_PREFIX}/usr/local/bin/tor)
+set(TOR_LIBTOR_PATH ${TOR_LIBTOR_PREFIX}/libtorExternal-prefix/src/libtorExternal/src/core/libtor-app.a)
 message(STATUS "TOR_LIBTOR_PATH ${TOR_LIBTOR_PATH}")
 
 # Set up Tor target
@@ -61,8 +61,6 @@ target_include_directories(libtor BEFORE INTERFACE ${TOR_LIBTOR_PREFIX}/usr/loca
 
 set(TOR_INCLUDE_PATH
         ${TOR_LIBTOR_PREFIX}/libtorExternal-prefix/src/libtorExternal/
-        ${TOR_LIBTOR_PREFIX}/libtorExternal-prefix/src/libtorExternal/src/app/main/
-        ${TOR_LIBTOR_PREFIX}/libtorExternal-prefix/src/libtorExternal/src/feature/api/
         PARENT_SCOPE
         )
 

@@ -22,6 +22,71 @@ file(WRITE ${DUMMY_SOURCE} "")
 
 add_library(spectrecoin_lib ${DUMMY_SOURCE})
 
+if (WITH_TOR)
+
+    add_definitions(-DEMBEDDED_TOR)
+    target_link_libraries(spectrecoin_lib
+            libtor
+            ${TOR_INCLUDE_PATH}/src/core/libtor-app.a
+            ${TOR_INCLUDE_PATH}/src/lib/libtor-compress.a
+            ${TOR_INCLUDE_PATH}/src/lib/libtor-evloop.a
+            ${TOR_INCLUDE_PATH}/src/lib/libtor-tls.a
+            ${TOR_INCLUDE_PATH}/src/lib/libtor-crypt-ops.a
+            ${TOR_INCLUDE_PATH}/src/ext/keccak-tiny/libkeccak-tiny.a
+            ${TOR_INCLUDE_PATH}/src/lib/libcurve25519_donna.a
+            ${TOR_INCLUDE_PATH}/src/ext/ed25519/ref10/libed25519_ref10.a
+            ${TOR_INCLUDE_PATH}/src/ext/ed25519/donna/libed25519_donna.a
+            ${TOR_INCLUDE_PATH}/src/lib/libtor-geoip.a
+            ${TOR_INCLUDE_PATH}/src/lib/libtor-process.a
+            ${TOR_INCLUDE_PATH}/src/lib/libtor-buf.a
+            ${TOR_INCLUDE_PATH}/src/lib/libtor-pubsub.a
+            ${TOR_INCLUDE_PATH}/src/lib/libtor-dispatch.a
+            ${TOR_INCLUDE_PATH}/src/lib/libtor-time.a
+            ${TOR_INCLUDE_PATH}/src/lib/libtor-fs.a
+            ${TOR_INCLUDE_PATH}/src/lib/libtor-encoding.a
+            ${TOR_INCLUDE_PATH}/src/lib/libtor-sandbox.a
+            ${TOR_INCLUDE_PATH}/src/lib/libtor-container.a
+            ${TOR_INCLUDE_PATH}/src/lib/libtor-net.a
+            ${TOR_INCLUDE_PATH}/src/lib/libtor-thread.a
+            ${TOR_INCLUDE_PATH}/src/lib/libtor-memarea.a
+            ${TOR_INCLUDE_PATH}/src/lib/libtor-math.a
+            ${TOR_INCLUDE_PATH}/src/lib/libtor-meminfo.a
+            ${TOR_INCLUDE_PATH}/src/lib/libtor-osinfo.a
+            ${TOR_INCLUDE_PATH}/src/lib/libtor-log.a
+            ${TOR_INCLUDE_PATH}/src/lib/libtor-lock.a
+            ${TOR_INCLUDE_PATH}/src/lib/libtor-fdio.a
+            ${TOR_INCLUDE_PATH}/src/lib/libtor-string.a
+            ${TOR_INCLUDE_PATH}/src/lib/libtor-term.a
+            ${TOR_INCLUDE_PATH}/src/lib/libtor-smartlist-core.a
+            ${TOR_INCLUDE_PATH}/src/lib/libtor-malloc.a
+            ${TOR_INCLUDE_PATH}/src/lib/libtor-wallclock.a
+            ${TOR_INCLUDE_PATH}/src/lib/libtor-err.a
+            ${TOR_INCLUDE_PATH}/src/lib/libtor-version.a
+            ${TOR_INCLUDE_PATH}/src/lib/libtor-intmath.a
+            ${TOR_INCLUDE_PATH}/src/lib/libtor-confmgt.a
+            ${TOR_INCLUDE_PATH}/src/lib/libtor-ctime.a
+            ${TOR_INCLUDE_PATH}/src/trunnel/libor-trunnel.a
+            ${TOR_INCLUDE_PATH}/src/lib/libtor-trace.a
+            ${CMAKE_BINARY_DIR}/external/libevent/lib/libevent.a
+            liblzma
+            ${CMAKE_BINARY_DIR}/external/libzstd/build/cmake/lib/libzstd.a
+            -lz
+            )
+
+    if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+        target_link_libraries(spectrecoin_lib
+                -lseccomp
+                -lcap
+                )
+    endif()
+
+    target_include_directories(spectrecoin_lib
+            SYSTEM BEFORE PUBLIC
+            ${TOR_INCLUDE_PATH}
+            )
+endif()
+
+
 target_link_libraries(spectrecoin_lib
         bdb
         leveldb
@@ -48,17 +113,6 @@ target_include_directories(spectrecoin_lib
         ${OPENSSL_INCLUDE_PATH}
         ${BERKELEYDB_INCLUDE_PATH}
         )
-
-#if (WITH_TOR)
-#    target_link_libraries(spectrecoin_lib
-#            libtor
-#            )
-#
-#    target_include_directories(spectrecoin_lib
-#            SYSTEM BEFORE PUBLIC
-#            ${TOR_INCLUDE_PATH}
-#            )
-#endif()
 
 # Common sources
 target_sources(spectrecoin_lib
@@ -207,29 +261,11 @@ add_executable(Spectrecoind ${CMAKE_CURRENT_LIST_DIR}/spectrecoind.cpp)
 
 # Link the daemon as static binary
 # ============================================================================================
-#if (WITH_TOR)
-#    target_link_libraries(Spectrecoind
-#            ssl
-#            crypto
-#            bdb
-#            leveldb
-#            spectrecoin_lib
-#            libevent
-#            libzstd
-#            libxz
-#            libtor
-#            -static
-#            )
-#else()
-    target_link_libraries(Spectrecoind
-            ssl
-            crypto
-            bdb
-            leveldb
-            spectrecoin_lib
-            -static
-            )
-#endif()
+
+target_link_libraries(Spectrecoind
+        spectrecoin_lib
+        -static
+        )
 
 if (ANDROID)
     message(STATUS "Skipping Qt for Android build")
@@ -242,10 +278,6 @@ else()
     # Link the UI wallet
     # QtWebEngine not static available, so no static binary here :-(
     target_link_libraries(Spectrecoin
-            ssl
-            crypto
-            bdb
-            leveldb
             spectrecoin_lib
             Qt5::Core
             Qt5::Widgets
