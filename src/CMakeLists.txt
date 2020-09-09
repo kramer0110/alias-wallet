@@ -327,6 +327,16 @@ if (ENABLE_GUI)
                 ${CMAKE_CURRENT_LIST_DIR}/qt/websocketclientwrapper.cpp
                 ${CMAKE_CURRENT_LIST_DIR}/qt/websockettransport.cpp
                 )
+        add_custom_command(TARGET Aliaswallet POST_BUILD
+                COMMAND cd ${CMAKE_BINARY_DIR} && "${ANDROIDDEPLOYQT_EXECUTABLE}"
+                --input ${CMAKE_BINARY_DIR}/android_deployment_settings.json
+                --output ${CMAKE_BINARY_DIR}/delivery
+                --android-platform android-29
+                --jdk '/usr/lib/jvm/java-8-openjdk-amd64/bin/javac'
+                --gradle
+                COMMENT "Running androiddeployqt..."
+                )
+
     else()
         # The UI wallet
         if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")

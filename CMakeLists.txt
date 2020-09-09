@@ -234,7 +234,13 @@ if (ENABLE_GUI)
         get_target_property(QtRemoteObjects_location Qt5::RemoteObjects LOCATION)
     endif()
 
-    if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+    if (ANDROID)
+        # Retrieve the absolute path to qmake and then use that path
+        # to find the macdeployqt binary
+        get_target_property(_qmake_executable Qt5::qmake IMPORTED_LOCATION)
+        get_filename_component(_qt_bin_dir "${_qmake_executable}" DIRECTORY)
+        find_program(ANDROIDDEPLOYQT_EXECUTABLE androiddeployqt HINTS "${_qt_bin_dir}")
+    elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
         # Retrieve the absolute path to qmake and then use that path
         # to find the macdeployqt binary
         get_target_property(_qmake_executable Qt5::qmake IMPORTED_LOCATION)
